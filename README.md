@@ -1,1 +1,1 @@
-!["wally screenshot"](http://i.imgur.com/yXrBJ8u.png)
+!["wally screenshot"](http://i.imgur.com/iOu9CQT.png)
