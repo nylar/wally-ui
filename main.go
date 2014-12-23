@@ -1,10 +1,10 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"text/template"
 
 	rdb "github.com/dancannon/gorethink"
 	"github.com/fatih/color"
@@ -26,13 +26,21 @@ func init() {
 	}
 }
 
+func TruncateContent(value string) template.HTML {
+	return template.HTML(wally.TruncateText(value, " ...", 200))
+}
+
+var funcs = template.FuncMap{
+	"truncateContent": TruncateContent,
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	res := new(wally.Results)
 	ctx := struct {
 		Res   *wally.Results
 		Query string
 	}{
-		res,
+		nil,
 		"",
 	}
 
@@ -48,7 +56,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	tmpl, err := template.ParseFiles("template.html")
+	t := template.New("template.html")
+	t = t.Funcs(funcs)
+
+	tmpl, err := t.ParseFiles("template.html")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

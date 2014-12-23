@@ -82,7 +82,9 @@
 <body>
 <div class="wrap">
 	<div class="logo">
-		<img src="https://camo.githubusercontent.com/c7c79f579e07ed8484f407083cdc2dd9458e53b7/687474703a2f2f692e696d6775722e636f6d2f4d536e79344b6a2e706e67" alt="Wally" />
+		<a href="/">
+			<img src="https://camo.githubusercontent.com/c7c79f579e07ed8484f407083cdc2dd9458e53b7/687474703a2f2f692e696d6775722e636f6d2f4d536e79344b6a2e706e67" alt="Wally" />
+		</a>
 	</div>
 	<form method="POST">
 		<button class="search-button">Search</button>
@@ -90,22 +92,23 @@
 			<input type="text" name="query" class="search-field" placeholder="Search..." {{if eq .Query ""}}{{else}}value="{{.Query}}"{{end}}/>
 		</div>
 	</form>
-
-	<div class="results-meta">Showing {{.Res.Count}} results ({{.Res.Time}} seconds)</div>
-	{{if eq .Res.Count 0}}
-	<p>No Results found</p>
-	{{else}}
-	<div class="results">
-		{{range $index, $result := .Res.Results }}
-		<div class="result">
-			<a href="{{$result.Document.Source}}">{{$result.Document.Title}}</a>
-			<p class="url">{{$result.Document.Source}}</p>
-			<p class="excerpt">
-				Lorem ipsum dolor sit amet, id hac hendrerit. Vitae facilisi potenti non mauris, turpis non nostra libero nunc, libero mauris nulla. Nonummy nulla egestas blandit, in nulla consectetuer ...
-			</p>
+	{{if .Res}}
+		<div class="results-meta">Showing {{.Res.Count}} results ({{printf "%.4f" .Res.Time}} seconds)</div>
+		{{if eq .Res.Count 0}}
+		<p>No Results found</p>
+		{{else}}
+		<div class="results">
+			{{range $index, $result := .Res.Results }}
+			<div class="result">
+				<a href="{{$result.Document.Source}}">{{$result.Document.Title}}</a>
+				<p class="url">{{$result.Document.Source}}</p>
+				<p class="excerpt">
+				{{$result.Document.Content | truncateContent}}
+				</p>
+			</div>
+			{{end}}
 		</div>
 		{{end}}
-	</div>
 	{{end}}
 </div>
 </body>
