@@ -2,9 +2,9 @@ package main
 
 import (
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	rdb "github.com/dancannon/gorethink"
 	"github.com/fatih/color"
@@ -15,9 +15,23 @@ var session *rdb.Session
 
 func init() {
 	var err error
+
+	confData, err := ioutil.ReadFile("config.yml")
+	if err != nil {
+		color.Set(color.FgRed)
+		log.Fatalln(err.Error())
+		color.Unset()
+	}
+	wally.Conf, err = wally.LoadConfig(confData)
+	if err != nil {
+		color.Set(color.FgRed)
+		log.Fatalln(err.Error())
+		color.Unset()
+	}
+
 	session, err = rdb.Connect(rdb.ConnectOpts{
-		Address:  os.Getenv("RETHINKDB_URL"),
-		Database: wally.Database,
+		Address:  wally.Conf.Database.Host,
+		Database: wally.Conf.Database.Name,
 	})
 	if err != nil {
 		color.Set(color.FgRed)
