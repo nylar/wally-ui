@@ -101,7 +101,7 @@
 			{{range $index, $result := .Res.Results }}
 			<div class="result">
 				<a href="{{$result.Document.Source}}">{{$result.Document.Title}}</a>
-				<p class="url">{{$result.Document.Source}}</p>
+				<p class="url">{{$result.Document.Source}}{{if eq $result.Document.Author ""}}{{else}} - {{$result.Document.Author}}{{end}}</p>
 				<p class="excerpt">
 				{{$result.Document.Content | truncateContent}}
 				</p>
