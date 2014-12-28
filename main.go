@@ -5,15 +5,19 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	rdb "github.com/dancannon/gorethink"
 	"github.com/fatih/color"
 	"github.com/nylar/wally"
 )
 
-var session *rdb.Session
+var (
+	session *rdb.Session
+)
 
 func init() {
+	//wally.ItemsPerPage = 10
 	var err error
 
 	confData, err := ioutil.ReadFile("config.yml")
@@ -48,8 +52,22 @@ var funcs = template.FuncMap{
 	"truncateContent": TruncateContent,
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	res := new(wally.Results)
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.New("index.html")
+	t = t.Funcs(funcs)
+
+	tmpl, err := t.ParseFiles("templates/index.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if err := tmpl.ExecuteTemplate(w, "index.html", nil); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+}
+
+func searchHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := struct {
 		Res   *wally.Results
 		Query string
@@ -58,33 +76,40 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		"",
 	}
 
-	if r.Method == "POST" {
-		var err error
-		query := r.PostFormValue("query")
-		res, err = wally.Search(query, session)
-		ctx.Res = res
-		ctx.Query = query
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	query := r.URL.Query().Get("query")
+	pageParam := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageParam)
+	if err != nil {
+		page = 1
 	}
 
-	t := template.New("template.html")
-	t = t.Funcs(funcs)
-
-	tmpl, err := t.ParseFiles("template.html")
+	res := new(wally.Results)
+	res, err = wally.Search(query, session, page)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	if err := tmpl.ExecuteTemplate(w, "template.html", ctx); err != nil {
+
+	ctx.Res = res
+	ctx.Query = query
+
+	t := template.New("search.html")
+	t = t.Funcs(funcs)
+
+	tmpl, err := t.ParseFiles("templates/search.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if err := tmpl.ExecuteTemplate(w, "search.html", ctx); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 }
 
 func main() {
-	http.HandleFunc("/", handler)
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	http.HandleFunc("/search/", searchHandler)
+	http.HandleFunc("/", indexHandler)
 	http.ListenAndServe(":8008", nil)
 }

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Wally</title>
+	<link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+<div class="wrap">
+	<form method="POST">
+		<button class="search-button">Search</button>
+		<div class="search-wrap">
+			<input type="text" name="query" class="search-field" placeholder="Search..." {{if eq .Query ""}}{{else}}value="{{.Query}}"{{end}}/>
+		</div>
+	</form>
+	{{if .Res}}
+		<div class="results-meta">Showing {{.Res.Count}} results ({{printf "%.4f" .Res.Time}} seconds)</div>
+		{{if eq .Res.Count 0}}
+		<p>No Results found</p>
+		{{else}}
+		<div class="results">
+			{{range $index, $result := .Res.Results }}
+			<div class="result">
+				<a href="{{$result.Document.Source}}">{{$result.Document.Title}}</a>
+				<span class="author">{{if ne $result.Document.Author ""}}{{$result.Document.Author}}{{end}}</span>
+				<p class="excerpt">
+				{{$result.Document.Content | truncateContent}}
+				</p>
+				<p class="url">{{$result.Document.Source}}</p>
+			</div>
+			{{end}}
+		</div>
+		{{end}}
+	{{end}}
+</div>
+</body>
+</html>
