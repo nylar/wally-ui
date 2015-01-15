@@ -20,12 +20,12 @@
 		<div class="results">
 			{{range $index, $result := .Res.Results }}
 			<div class="result">
-				<a href="{{$result.Document.Source}}">{{$result.Document.Title}}</a>
+				<a href="{{$result.Document.ID}}">{{$result.Document.Title}}</a>
 				<span class="author">{{if ne $result.Document.Author ""}}{{$result.Document.Author}}{{end}}</span>
 				<p class="excerpt">
 				{{$result.Document.Content | truncateContent}}
 				</p>
-				<p class="url">{{$result.Document.Source}}</p>
+				<p class="url">{{$result.Document.ID}}</p>
 			</div>
 			{{end}}
 		</div>
